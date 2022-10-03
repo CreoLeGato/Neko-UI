@@ -758,6 +758,7 @@ end,
 	
 	["rejoin"] = {[f] = function()
 	    game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId)
+	    loadstring(game:HttpGet("https://raw.githubusercontent.com/CreoLeGato/Neko-UI/master/source", true))()
 end,
 	["Info"] = "rejoin the game"},
 	
@@ -858,6 +859,7 @@ syn.queue_on_teleport(string.format([[
 				charadded:Disconnect()
 			end)
 			playeradded:Disconnect()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/CreoLeGato/Neko-UI/master/source", true))()
 		end)
 	]]))
 	game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, cmdp)
