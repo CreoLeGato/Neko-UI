@@ -1,0 +1,935 @@
+local Load = nil
+local Load = function()
+function find_player(target)
+	local target = target:lower()
+
+	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+		if v.DisplayName:lower():match("^"..tostring(target)) or v.Name:lower():match("^"..tostring(target)) then
+			target = v
+			break
+		end
+	end
+	return tostring(target)
+end
+
+--{{Vars}}--
+local TweenService = game:GetService("TweenService")
+
+local ModelsRequire = game:GetObjects("rbxassetid://8920559849")
+local MFolder = ModelsRequire[1]
+local GUI = MFolder
+
+--local GUI = script.Parent
+local ScreenSize = GUI.AbsoluteSize
+GUI.MainFrame.Presets.Message.Size = UDim2.new(1,0,0,ScreenSize.Y*GUI.MainFrame.Size.Y.Scale*GUI.MainFrame["Message List"].Size.Y.Scale/7)
+local CommandMessagePreset = GUI.MainFrame.Presets.Message
+
+local MainFrame = GUI.MainFrame
+local CommandBar = MainFrame.AutoCommand.Command
+local AutoCommandbar = MainFrame.AutoCommand
+local MessageList = MainFrame["Message List"]
+local CloseButton = MainFrame.Top.Close
+local f = "function"
+local mouse = game.Players.LocalPlayer:GetMouse()
+local Sizem = MainFrame.Size.X.Scale
+
+NameProperties = {["Frame1"] = {Position = UDim2.new(0,0,-0.15,0)}, ["Frame2"] = {Position = UDim2.new(0,0,0,0)}}
+CloseProperites = {["Frame1"] = {TextTransparency = 1}, ["Frame2"] = {TextTransparency = 0}}
+FrameProperties = {["Frame1"] = {Size = UDim2.new(0,0,MainFrame.Size.Y.Scale,0)}, ["Frame2"] = {Size = UDim2.new(Sizem,0, MainFrame.Size.Y.Scale, 0)}}
+CMDBARPROPERTIES = {["Frame1"] = {Position = UDim2.new(0,0,1.2,0)}, ["Frame2"] = {Position = UDim2.new(0,0,0.8,0)}}
+ICON_PROPERTIES = {["Frame1"] = {TextTransparency = 1, Position = UDim2.new(0,0,2,0)},["Frame2"] = {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}}
+
+IconText_PROPERTIES = {["Frame1"] = {TextTransparency = 1,Position = UDim2.new(2,0,0.461,0)},["Frame2"] = {TextTransparency = 0,Position = UDim2.new(0.498, 0,0.461, 0)}}
+ICON_PROPERTIES2 = {["Frame1"] = {Position = UDim2.new(0,0,0,0)},["Frame2"] = {Position = UDim2.new(-0.145, 0,0, 0)}}
+local PlayerClipping = false
+local Noclipping = false
+local Flying = false
+local flyspeed = 50
+local seizure = false
+local disaster = false
+local spinning = false
+local stalking = false
+--{{Vars}}--
+
+
+
+
+
+
+
+--{{Drag}}--
+spawn(function()
+	local UserInputService = game:GetService("UserInputService")
+	local runService = (game:GetService("RunService"));
+
+	local gui = MainFrame
+	local fr = GUI.MainFrame.Top
+
+	local dragging
+	local dragInput
+	local dragStart
+	local startPos
+
+	function Lerp(a, b, m)
+		return a + (b - a) * m
+	end;
+
+	local lastMousePos
+	local lastGoalPos
+	local DRAG_SPEED = (8); -- // The speed of the UI darg.
+	function Update(dt)
+		if not (startPos) then return end;
+		if not (dragging) and (lastGoalPos) then
+			gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, lastGoalPos.X.Offset, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, lastGoalPos.Y.Offset, dt * DRAG_SPEED))
+			return 
+		end;
+
+		local delta = (lastMousePos - UserInputService:GetMouseLocation())
+		local xGoal = (startPos.X.Offset - delta.X);
+		local yGoal = (startPos.Y.Offset - delta.Y);
+		lastGoalPos = UDim2.new(startPos.X.Scale, xGoal, startPos.Y.Scale, yGoal)
+		gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, xGoal, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, yGoal, dt * DRAG_SPEED))
+	end;
+
+	fr.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = gui.Position
+			lastMousePos = UserInputService:GetMouseLocation()
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	gui.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	runService.Heartbeat:Connect(Update)
+end)
+--{{Drag}}--
+
+
+local chat = function(MSG,the)
+	game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(MSG, the)
+end
+
+
+local MakeTween = function(timetack,easingstyle,easingdirection,repeats,flipflop)
+	local newtween = TweenInfo.new(
+		timetack, 
+		easingstyle, 
+		easingdirection, 
+		repeats, 
+		flipflop, 
+		0 
+	)
+	return newtween
+end
+local DOTWEEN = function(Thing,tween,value)
+	TweenService:Create(Thing,tween,value):Play()
+end
+
+
+
+function RootPart()
+	return game.Players.LocalPlayer.Character.HumanoidRootPart
+end
+function Humanoid()
+	return game.Players.LocalPlayer.Character.Humanoid
+end
+
+
+
+function find_command(command)
+	if string.len(command)>1 then
+		for i,v in pairs(command_table) do
+			if i:match("^"..tostring(command)) then
+				AutoCommandbar.Text = i
+				break
+			else
+				AutoCommandbar.Text = ""
+			end
+		end
+	else
+		AutoCommandbar.Text = ""
+	end
+end
+function execute(f,...)
+	command_table[f]["function"](unpack(...))
+end
+function step()
+	game:GetService("RunService").Stepped:wait()
+	return
+end
+CommandBar.Changed:Connect(function(Change)
+	if Change == "Text" then
+		find_command(CommandBar.Text)
+	end
+end)
+CommandBar.FocusLost:Connect(function(key)
+	if key then
+		local Command = CommandBar.Text
+		CommandBar.Text = ""
+		local values = string.split(Command," ")
+		local c = values[1]
+		table.remove(values,1)
+		execute(c,values)
+	end
+end)
+
+function Add_Message(MSG)
+	local NewMessage = CommandMessagePreset:Clone()
+	NewMessage.Text = MSG
+	NewMessage.Parent = MessageList
+end
+function makehelpmenu()
+	local NewHelpList = GUI.MainFrame.Presets["Help Menu"]:Clone()
+	NewHelpList.Top.Close.cb.MouseButton1Click:Connect(function()
+		NewHelpList:Destroy()
+	end)
+
+
+
+
+
+
+
+	spawn(function()
+		local UserInputService = game:GetService("UserInputService")
+		local runService = (game:GetService("RunService"));
+
+		local gui = NewHelpList
+		local fr = NewHelpList.Top
+
+		local dragging
+		local dragInput
+		local dragStart
+		local startPos
+
+		function Lerp(a, b, m)
+			return a + (b - a) * m
+		end;
+
+		local lastMousePos
+		local lastGoalPos
+		local DRAG_SPEED = (8); -- // The speed of the UI darg.
+		function Update(dt)
+			if not (startPos) then return end;
+			if not (dragging) and (lastGoalPos) then
+				gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, lastGoalPos.X.Offset, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, lastGoalPos.Y.Offset, dt * DRAG_SPEED))
+				return 
+			end;
+
+			local delta = (lastMousePos - UserInputService:GetMouseLocation())
+			local xGoal = (startPos.X.Offset - delta.X);
+			local yGoal = (startPos.Y.Offset - delta.Y);
+			lastGoalPos = UDim2.new(startPos.X.Scale, xGoal, startPos.Y.Scale, yGoal)
+			gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, xGoal, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, yGoal, dt * DRAG_SPEED))
+		end;
+
+		fr.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = true
+				dragStart = input.Position
+				startPos = gui.Position
+				lastMousePos = UserInputService:GetMouseLocation()
+
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragging = false
+					end
+				end)
+			end
+		end)
+
+		gui.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				dragInput = input
+			end
+		end)
+
+		runService.Heartbeat:Connect(Update)
+	end)
+
+
+
+
+
+
+
+
+
+
+
+
+	local thing = 0
+	for i,v in pairs(command_table) do
+		thing += 1
+		local NewHelpMessage = MainFrame.Presets.HelpMessage:Clone()
+	
+
+		local NewFrame = NewHelpMessage.NewFrame
+		NewFrame.text.Text = command_table[i]["Info"]
+
+		local Hover = false
+
+		NewHelpMessage.MouseEnter:Connect(function()
+			NewFrame.Parent = GUI
+			Hover = true 
+			while Hover == true do
+				NewFrame.Position = UDim2.new(0,mouse.X+12,0,mouse.Y + 28)
+			    task.wait()
+			end
+		end)
+		NewHelpMessage.MouseLeave:Connect(function()
+			Hover = false
+			NewFrame.Parent = NewHelpMessage
+		end)
+		NewHelpMessage.Size =  UDim2.new(1,0,0,ScreenSize.Y*NewHelpList.Size.Y.Scale*NewHelpList["Message List"].Size.Y.Scale/10)
+		NewHelpMessage.Text = i
+		
+		NewHelpMessage.InputBegan:Connect(function()
+		    CommandBar.Text = NewHelpMessage.Text
+		end)
+		
+		NewHelpMessage.Parent = NewHelpList["Message List"]
+		NewHelpList["Message List"].CanvasSize += UDim2.new(0,0,0,ScreenSize.Y*NewHelpList.Size.Y.Scale*NewHelpList["Message List"].Size.Y.Scale/10)
+	end
+	NewHelpList.Parent = GUI
+end
+
+
+command_table = {
+	["help"] = {[f] = function()
+		makehelpmenu()
+	end,
+	["Info"] = "Why are you reading this???"},
+	["pclip"] = {[f] = function()
+		Add_Message("playerclipping enabled")	
+		if PlayerClipping == false then
+			PlayerClipping = true 
+			while PlayerClipping == true do
+				for i,plr in pairs(game.Players:GetChildren()) do
+					for i,v in pairs(plr.Character:GetChildren()) do
+						coroutine.resume(coroutine.create(function()
+							v["CanCollide"] = false
+						end))
+					end
+				end
+				step()
+			end
+		end
+	end,
+	["Info"] = "Clip Players (like noclip but better)"},
+
+	["noclip"] = {[f] = function()
+		Add_Message("noclip enabled")	
+		if Noclipping == false then
+			Noclipping = true 
+			while Noclipping == true do
+				for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+					coroutine.resume(coroutine.create(function()
+						v["CanCollide"] = false
+					end))
+				end
+				step()
+			end
+		end
+	end,
+	["Info"] = "Makes your player have no collision"},
+
+	["unnoclip"] = {[f] = function()
+		Add_Message("noclip disabled")	
+		Noclipping = false
+	end,
+	["Info"] = "Stops noclip"},
+
+	["unpclip"] = {[f] = function()
+		Add_Message("playerclipping disabled")	
+		PlayerClipping = false
+	end,
+	["Info"] = "Stops pclip"},
+
+	["lightmode"] = {[f] = function()
+		for i,v in pairs(GUI:GetDescendants()) do
+			coroutine.resume(coroutine.create(function()
+				v.BackgroundColor3 = Color3.new(255,255,255)
+			end))
+			coroutine.resume(coroutine.create(function()
+				v.TextColor3 = Color3.new(255,255,255)
+			end))
+		end
+	end,
+	["Info"] = ":)"},
+
+	["walkspeed"] = {[f] = function(speed)
+		game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").WalkSpeed = speed
+		Add_Message("Set walkspeed to "..speed)	
+	end,
+	["Info"] = "Sets walk speed"},
+
+	["jumppower"] = {[f] = function(power)
+		game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").JumpPower = power
+		Add_Message("Set jump power to "..power)		
+	end,
+	["Info"] = "Sets jump power"},
+
+	["fly"] = {[f] = function()
+		local BG = Instance.new('BodyGyro',RootPart())
+		local BV = Instance.new('BodyVelocity',RootPart())
+		BG.MaxTorque = Vector3.new(math.huge,math.huge,math.huge)
+		BG.P = 1e4
+		BG.CFrame = RootPart().CFrame
+		BV.Velocity = Vector3.new(0,0,0)
+		BV.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+		Flying = true
+		game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = true
+
+
+		Add_Message("Begun Flying")
+		while Flying == true do
+			step()
+			local FW = Humanoid().MoveDirection
+			local W1 = FW* workspace.CurrentCamera.CFrame.LookVector
+			local W2 = FW* workspace.CurrentCamera.CFrame.RightVector
+			local WVA = W1.X+W1.Z
+
+
+			BV.Velocity = Vector3.new(FW.X,workspace.CurrentCamera.CFrame.LookVector.Y*WVA,FW.Z)*flyspeed
+			BG.CFrame = workspace.CurrentCamera.CoordinateFrame
+		end
+		BG:Destroy()
+		BV:Destroy()
+		game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+	end,
+	["Info"] = "Enables Flying"},
+
+	["flyspeed"] = {[f] = function(speed)
+		flyspeed = speed
+		Add_Message("Set flyspeed to "..speed)	
+	end,
+	["Info"] = "sets flight speed"},
+
+	["unfly"] = {[f] = function()
+		Flying = false
+		Add_Message("stopped flying")	
+	end,
+	["Info"] = "Stops flying"},
+
+	["reset"] = {[f] = function()
+		game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").Health = 0
+	end,
+	["Info"] = "Self explanatory but kills your character."},
+
+	["reload"] = {[f] = function()
+		local Start = RootPart().CFrame
+		game.Players.LocalPlayer.Character:Destroy()
+		game.Players.LocalPlayer.CharacterAdded:Wait()
+		game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Start
+	end,
+	["Info"] = "Resets your character in the same position"},
+	["sit"] = {[f] = function()
+		Humanoid().Sit = true	
+	end,
+	["Info"] = "Makes you sit"},
+	["owo"] = {[f] = function()
+		for i = 1,10 do
+			chat("owo","All")
+		end	
+	end,
+	["Info"] = "makes you spam owo in chat"},
+	["uwu"] = {[f] = function()
+		for i = 1,10 do
+			chat("uwu","All")
+		end	
+	end,
+	["Info"] = "makes you spam uwu in chat"},
+	["seizure"] = {[f] = function()
+		Humanoid().PlatformStand = true
+		seizure = true
+		while seizure == true do
+			step()
+			if math.random(1,500) > 450 then
+				RootPart().AssemblyAngularVelocity = Vector3.new(math.random(-50,50),math.random(-50,50),math.random(-50,50))
+			end
+		end
+	end,
+	["Info"] = "Makes you spaz out O_O"},
+	["unseizure"] = {[f] = function()
+		Humanoid().PlatformStand = false
+		seizure = false
+	end,
+	["Info"] = "Stops the seizure"},
+	["random"] = {[f] = function()
+		local commands = {}
+		for i,v in pairs(command_table) do
+			table.insert(commands,i)
+		end
+		local command = commands[math.random(1,#commands)]
+		Add_Message("running "..command)
+		execute(command,{})
+	end,
+	["Info"] = "runs a random command"},
+	["disaster"] = {[f] = function(commandsnumber,tim)
+		if not commandsnumber then
+			commandsnumber = 1
+		end
+		if not tim then
+			tim = 1
+		end
+		local commands = {}
+		for i,v in pairs(command_table) do
+			if i ~= "disaster" and i ~= "random" and i ~= "undisaster" then
+				table.insert(commands,i)
+			end
+		end
+		disaster = true
+		Add_Message("Disaster activated. You have "..tim.." seconds")
+		while disaster == true do
+			wait(tim)
+			spawn(function()
+				for i =1,commandsnumber do	
+					local command = commands[math.random(1,#commands)]
+					Add_Message("running "..command)
+					if math.random(1,2) == 1 then
+						execute(command,{game.Players:GetPlayers()[math.random(1,#game.Players:GetPlayers())]})
+					else
+						execute(command,{math.random(1,500)})
+					end
+				end
+			end)
+		end
+	end,
+	["Info"] = "runs 3 random commands every 10 seconds."},
+	["undisaster"] = {[f] = function()
+		disaster = false
+	end,
+	["Info"] = "stops the pain"},
+	["spin"] = {[f] = function(amount)
+		if spinning == false then
+			spinning = true
+			Add_Message("You spin me right round baby rig-")
+			while spinning == true do
+				step()
+				RootPart().CFrame *= CFrame.Angles(0,amount,0)
+			end
+		end
+	end,
+	["Info"] = "SPEEEEEEEEEEE-"},
+	["unspin"] = {[f] = function()
+		spinning = false
+	end,
+	["Info"] = "stops spinning"},
+	["fov"] = {[f] = function(amount)
+		Add_Message("Set the fov to "..amount)
+		workspace.CurrentCamera.FieldOfView = amount
+	end,
+	["Info"] = "sets fov"},
+	["maxfov"] = {[f] = function()
+		Add_Message("MAX FOV")
+		workspace.CurrentCamera.FieldOfView = 9999999
+	end,
+	["Info"] = "use this if you dont want to see"},
+	["nofov"] = {[f] = function()
+		Add_Message("i cant see")
+		workspace.CurrentCamera.FieldOfView = 0
+	end,
+	["Info"] = "use this if you dont want to see"},
+	["anchor"] = {[f] = function()
+		Add_Message("anchored body")
+		RootPart().Anchored = true
+	end,
+	["Info"] = "anchor yourself"},
+	["unanchor"] = {[f] = function()
+		Add_Message("unanchored body")
+		RootPart().Anchored = false
+	end,
+	["Info"] = "unanchor yourself"},
+	["flip"] = {[f] = function()
+		Humanoid():ChangeState("Jumping")
+		wait()
+		Humanoid().Sit = true
+		for i = 1,360 do
+			delay(i/720,function()
+				Humanoid().Sit = true
+				RootPart().CFrame = RootPart().CFrame * CFrame.Angles(0.0174533,0,0)
+			end)
+		end
+		wait(0.55)
+		Humanoid().Sit = false
+	end,
+	["Info"] = "DO A FLIP BRO!"},
+	["backflip"] = {[f] = function()
+		Humanoid():ChangeState("Jumping")
+		wait()
+		Humanoid().Sit = true
+		for i = 1,360 do
+			delay(i/720,function()
+				Humanoid().Sit = true
+				RootPart().CFrame = RootPart().CFrame * CFrame.Angles(-0.0174533,0,0)
+			end)
+		end
+		wait(0.55)
+		Humanoid().Sit = false
+	end,
+	["Info"] = "DO A BACKFLIP BRO!"},
+	["veryhigh"] = {[f] = function()
+		RootPart().Position = Vector3.new(0,9999999,0)
+	end,
+	["Info"] = "thats very far up..."},
+	["jump"] = {[f] = function()
+		Humanoid().Jump = true
+	end,
+	["Info"] = "*insert mario sound effect here*"},
+	["stalk"] = {[f] = function(name)
+		stalking = true
+		while stalking == true do
+			step()
+			RootPart().CFrame = game.Players[find_player(name)].Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-1)
+	end
+	end,
+	["Info"] = "you go to them"},
+["unstalk"] = {[f] = function()
+	stalking = false
+end,
+["Info"] = "stop going"},
+["goto"] = {[f] = function(name)
+		RootPart().CFrame = game.Players[find_player(name)].Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-2) * CFrame.Angles(0,math.rad(180),0)
+end,
+["Info"] = "goto player"},
+["playsong"] = {[f] = function(id)
+	local sound = Instance.new("Sound")
+	sound.RollOffMinDistance = 999999
+	sound.RollOffMaxDistance = 999999
+	sound.Looped = true
+	sound.SoundId = "rbxassetid://"..id
+	sound:Play()
+		sound.Parent = workspace
+		sound.Volume = 10
+end,
+["Info"] = "Play music locally"},
+["ramranch"] = {[f] = function(id)
+	execute("playsong",{3031224572})
+end,
+	["Info"] = "Play music locally"},
+	["random10"] = {[f] = function()
+		local commands = {}
+		for i,v in pairs(command_table) do
+			table.insert(commands,i)
+		end
+		local command = commands[math.random(1,#commands)]
+		Add_Message("running "..command)
+		for i=1,10 do
+			spawn(function()
+				execute(command,{})
+				end)
+			end
+	end,
+	["Info"] = "runs a random command 10 times"},
+	["spaz"] = {[f] = function()
+		Humanoid().PlatformStand = true
+		RootPart().AssemblyAngularVelocity = Vector3.new(math.random(-500,500),math.random(-500,500),math.random(-500,500))
+		RootPart().AssemblyLinearVelocity = Vector3.new(math.random(-500,500),math.random(-500,500),math.random(-500,500))
+		wait(1)
+		Humanoid().PlatformStand = false	
+	end,
+	["Info"] = "slams you into nearest wall probably"},
+	["pulltoplayer"] = {[f] = function(victim)
+	    local plr = game.Players[find_player(victim)]
+	    yourmom = true
+	    while yourmom == true  do
+	        step()
+	        Humanoid().PlatformStand = true
+			RootPart().AssemblyLinearVelocity = (plr.Character.HumanoidRootPart.Position - RootPart().Position)*200
+	    end
+		Humanoid().PlatformStand = false
+	end,
+	["Info"] = "slams you into the player of your choice"},
+	["unpulltoplayer"] = {[f] = function()
+	    yourmom = false
+	end,
+	["Info"] = "stops command"},
+	["denet"] = {[f] = function(victim)
+	    local plr = game.Players[find_player(victim)]
+	    local c = game.Players.LocalPlayer.Character
+	    local start = c.HumanoidRootPart.CFrame
+	    
+
+	    
+	    local s = game:GetService("RunService").Stepped:Connect(function()
+	    c.HumanoidRootPart.CFrame = plr.Character["Right Leg"].CFrame
+	     plr.Character["Right Leg"].Velocity = Vector3.new(0,48,0)
+	     sethiddenproperty(plr.Character["Right Leg"],"NetworkIsSleeping",true) 
+	end)
+    
+    wait(5)
+    s:Disconnect()
+    wait()
+    c.HumanoidRootPart.Velocity = Vector3.new()
+    c:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+    c.HumanoidRootPart.CFrame = start
+	end,
+	["Info"] = "attempts to break player's net"},
+	["fling"] = {[f] = function(victim)
+	    local Victim = game.Players[find_player(victim)].Character
+	    
+local F = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+game.Players.LocalPlayer.Character.Humanoid.Health = 100
+for i = 1,200 do
+    ftf = 0
+    if i >= 100 then
+    ftf = math.random(-1,1)*50    
+    end
+	task.wait()
+	for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+		if v:IsA("Part") or v:IsA("MeshPart") then
+			v.CanCollide = false
+		end
+	end
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Victim.Head.Position + Vector3.new(0,-4+ftf,0)) * CFrame.Angles(math.rad(-90+math.sin(time()*50)*90),0,0)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0,6000,0)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.new(0,100000,0)
+end
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0,0,0)
+task.wait()
+repeat
+    task.wait()
+game.Players.LocalPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0,0,0)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.new(0,0,0)
+	until game.Players.LocalPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity == Vector3.new(0,0,0)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = F
+end,
+	["Info"] = "attempts to fling player"},
+	
+	["remotespy"] = {[f] = function()
+	    loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua"))()
+end,
+	["Info"] = "opens remote spy"},
+	["toolfling"] = {[f] = function(victim)
+	    local Victim = game.Players[find_player(victim)].Character
+	    if game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool") then
+	        local C = game.Players.LocalPlayer.Character
+	        local CC = C:FindFirstChildWhichIsA("Humanoid"):Clone()
+	        C:FindFirstChildWhichIsA("Humanoid"):Destroy()
+	        CC.Parent = C
+	        local MCF = C.HumanoidRootPart.CFrame
+	        local flingpart = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool").Handle
+	        flingpart.Parent.Parent = C
+	        wait()
+	        flingpart.Parent.Parent = workspace
+	        while C.Parent and flingpart.Parent.Parent == workspace do
+	            C.HumanoidRootPart.CFrame = Victim.Head.CFrame * CFrame.new(Vector3.new(0,-3.5,0)) * CFrame.Angles(math.rad(-90+math.sin(time()*50)*90),0,0)
+	            flingpart.AssemblyAngularVelocity = Vector3.new(6000,0,0)
+	            task.wait()
+	        end
+	        
+	        if C.Parent then
+	            C.HumanoidRootPart.CFrame = CFrame.new(0,9e9,0)
+	            else
+	                
+	            end
+
+
+	        task.wait()
+--[[
+	        for i,c in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+	            if c:IsA("Part") or c:IsA("MeshPart") then
+	            c.Velocity = Vector3.new(0,0,0)
+	            c.AssemblyAngularVelocity = Vector3.new(0,0,0)
+	            end
+	       end
+	       ]]
+	        repeat
+	            wait()
+	            until not C.Parent
+	        
+	        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = MCF
+	   end
+end,
+	["Info"] = "attempts to fling using a tool"},
+	
+	["rejoin"] = {[f] = function()
+	    game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId)
+end,
+	["Info"] = "rejoin the game"},
+	
+	["gotovoid"] = {[f] = function()
+	    local Start = RootPart().CFrame
+	    RootPart().CFrame = CFrame.new(9e9,9e9,9e9)
+	    wait(5)
+		--game.Players.LocalPlayer.Character:Destroy()
+		--game.Players.LocalPlayer.CharacterAdded:Wait()
+		game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Start
+end,
+	["Info"] = "voids goto users"},
+	
+	["void"] = {[f] = function(victim)
+	   local Player = game.Players[find_player(victim)]
+	   
+	   local P = game.Players.LocalPlayer
+    C = P.Character
+    
+    old = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+	local Tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
+	Tool.GripPos = Vector3.new(0,99999,0)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9e9,9e9,9e9)
+	
+	
+	P.Character = nil
+	game:GetService("RunService").Heartbeat:wait()
+	game.Players.LocalPlayer.Character = C
+	
+	wait(game.Players.RespawnTime-0.6)
+	
+	
+	local h = Instance.new("Humanoid")
+	h.Parent = game.Players.LocalPlayer.Character
+	game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid"):Destroy()
+	game.Workspace.FallenPartsDestroyHeight = 0/0
+	Tool.Parent = game.Players.LocalPlayer.Character
+	spawn(function()
+		for i = 1,50 do
+			firetouchinterest(Tool.Handle, Player.Character.HumanoidRootPart, 0)
+			firetouchinterest(Tool.Handle, Player.Character.HumanoidRootPart, 1)
+			task.wait()
+			end
+	end)
+	game.Players.LocalPlayer.CharacterAdded:wait()
+	game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = old
+end,
+	["Info"] = "voids vicim"},
+	
+	["kill"] = {[f] = function(victim)
+	   local Player = game.Players[find_player(victim)]
+	   
+	   local P = game.Players.LocalPlayer
+    C = P.Character
+    
+    old = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+	local Tool = game.Players.LocalPlayer.Backpack:FindFirstChildWhichIsA("Tool")
+	Tool.GripPos = Vector3.new(0,0,0)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9e9,-9e9,9e9)
+	
+	
+	P.Character = nil
+	game:GetService("RunService").Heartbeat:wait()
+	game.Players.LocalPlayer.Character = C
+	
+	wait(game.Players.RespawnTime-0.6)
+	
+	
+	local h = Instance.new("Humanoid")
+	h.Parent = game.Players.LocalPlayer.Character
+	game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid"):Destroy()
+	game.Workspace.FallenPartsDestroyHeight = 0/0
+	Tool.Parent = game.Players.LocalPlayer.Character
+	spawn(function()
+		for i = 1,50 do
+			firetouchinterest(Tool.Handle, Player.Character.HumanoidRootPart, 0)
+			firetouchinterest(Tool.Handle, Player.Character.HumanoidRootPart, 1)
+			task.wait()
+			end
+	end)
+	game.Players.LocalPlayer.CharacterAdded:wait()
+	game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = old
+end,
+	["Info"] = "kills vicim"},
+	
+	
+	
+	["rejoinrespawn"] = {[f] = function()
+	    local c = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+syn.queue_on_teleport(string.format([[
+		game:GetService('ReplicatedFirst'):RemoveDefaultLoadingScreen()
+		local playeradded, charadded
+		playeradded = game:GetService('Players').PlayerAdded:Connect(function(plr)
+			charadded = plr.CharacterAdded:Connect(function(char)
+				char:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(]]..tostring(c)..[[)
+				charadded:Disconnect()
+			end)
+			playeradded:Disconnect()
+		end)
+	]]))
+	game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, cmdp)
+end,
+	["Info"] = "rejoin and move to last position"},
+	
+}
+local closing = false
+CloseButton.cb.MouseButton1Click:Connect(function()
+	if closing == false then
+		closing = true
+		local tween = MakeTween(0.4,Enum.EasingStyle.Cubic,Enum.EasingDirection.Out,0,false)
+		DOTWEEN(MainFrame.Top.Icon,tween,{Position = UDim2.new(0,0,1,0)})
+		DOTWEEN(MainFrame.Top.Icon.Namee,tween,{Position = UDim2.new(0.08, 0,-1, 0)})
+		DOTWEEN(MainFrame.Top.Close,tween,{Position = UDim2.new(1.5,0,0,0)})
+
+		DOTWEEN(MainFrame.Top,tween,{Position = UDim2.new(0,0,-0.5,0)})
+		wait(0.7)
+		DOTWEEN(MainFrame,tween,{Size = UDim2.new(0.35, 0,0, 0)})
+		wait(0.4)
+		DOTWEEN(MainFrame,tween,{Size = UDim2.new(0, 0,0, 0)})
+		wait(0.4)
+		GUI:Destroy()
+	end
+end)
+function DoTweenFromPropTable(Instanc,Tab,tim)
+	for i,v in pairs(Tab["Frame1"]) do
+		coroutine.resume(coroutine.create(function()
+			Instanc[i] = v
+		end))
+	end
+
+	DOTWEEN(Instanc,MakeTween(tim,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,0,false),Tab["Frame2"])
+end
+
+function SetPropertiesFromPropTable(Instanc,Tab)
+	for i,v in pairs(Tab["Frame1"]) do
+		coroutine.resume(coroutine.create(function()
+			Instanc[i] = v
+		end))
+	end
+end
+--- Opening
+
+SetPropertiesFromPropTable(MainFrame,FrameProperties)
+SetPropertiesFromPropTable(MainFrame.Top,NameProperties)
+SetPropertiesFromPropTable(AutoCommandbar,CMDBARPROPERTIES)
+SetPropertiesFromPropTable(CloseButton,CloseProperites)
+SetPropertiesFromPropTable(MainFrame.MainIcon,ICON_PROPERTIES)
+SetPropertiesFromPropTable(MainFrame.MainIcon.NekoTex,IconText_PROPERTIES)
+coroutine.resume(coroutine.create(function()
+	GUI.Parent = game:GetService("CoreGui"):FindFirstChild("RobloxGui")	
+end))
+
+
+DoTweenFromPropTable(MainFrame,FrameProperties,1)
+
+--DoTweenFromPropTable(MainFrame.MainIcon,ICON_PROPERTIES,0.7)
+--DoTweenFromPropTable(MainFrame.MainIcon,ICON_PROPERTIES2,0.7)
+--DoTweenFromPropTable(MainFrame.MainIcon.NekoTex,IconText_PROPERTIES,0.7)
+wait(1.2)
+--DoTweenFromPropTable(MainFrame.MainIcon,{["Frame1"] = {},["Frame2"] = {TextTransparency = 1}},1)
+--DoTweenFromPropTable(MainFrame.MainIcon.NekoTex,{["Frame1"] = {},["Frame2"] = {TextTransparency = 1}},1)
+
+
+DoTweenFromPropTable(MainFrame.Top,NameProperties,1)
+DoTweenFromPropTable(AutoCommandbar,CMDBARPROPERTIES,1)
+wait(1)
+Add_Message("Thank you for using Neko UI V1 by Creo")
+Add_Message('Type "help" in the command bar to view all commands!')
+DoTweenFromPropTable(CloseButton,CloseProperites,0.5)
+
+---
+end
+Load()
